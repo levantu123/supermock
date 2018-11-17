@@ -1,0 +1,27 @@
+{
+  "groups": [
+    {
+      "name": "",
+      "type": "com.auto.api.MockConfigs",
+      "sourceType": "com.auto.api.MockConfigs"
+    }
+  ],
+  "properties": [
+    {
+      "name": "origin-load",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.auto.api.MockConfigs"
+    },
+    {
+      "name": "origin-save",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.auto.api.MockConfigs"
+    },
+    {
+      "name": "origin-url",
+      "type": "java.lang.String",
+      "sourceType": "com.auto.api.MockConfigs"
+    }
+  ],
+  "hints": []
+}
