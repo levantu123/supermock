@@ -23,7 +23,7 @@ public class MockGetService {
 	@Autowired
 	private MockConfigs cockConfigs;
 	
-	public Object handleGet(String path, Map<String, String[]> para, String method) {
+	public Object handleGet(String path, Map<String, String[]> para) {
 		
 		String url = textAnalyzer.buildUrl(path, para);
 		String link = textAnalyzer.removePrefixUrl(url, "v1");
