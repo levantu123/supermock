@@ -1,5 +1,0 @@
-mock:
-  config:
-    origin-api: https://uic.group.dev.integral.digital
-    origin-load: true
-    origin-save: true
