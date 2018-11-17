@@ -1,5 +1,6 @@
 package com.auto.api.service;
 
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.auto.api.MockConfigs;
+import com.auto.api.common.TextAnalyzer;
 import com.auto.api.model.Request;
 import com.auto.api.repo.RequestRepository;
 
@@ -16,25 +18,26 @@ public class MockPostService {
 	RequestRepository requestRepository;
 	
 	@Autowired
+	TextAnalyzer textAnalyzer;
+	
+	@Autowired
 	private MockConfigs cockConfigs;
 	
 	
-	public Object handleGet(String path, String method, Object body) {
-		String id = "";
-		String link = path.replace("/v1", "");
-		String[] terms = link.split("/");
-		for(String term : terms) {
-			id += term+"-_";
-		}
+	public Object handleGet(String path, Map<String, String[]> para, String method, Object body) {
+		String url = textAnalyzer.buildUrl(path, para);
+		String link = textAnalyzer.removePrefixUrl(url, "v1");
+		String id = textAnalyzer.buildId(link);
+		
 		Optional<Request> request = requestRepository.findById(id);
 		if(cockConfigs.isOriginLoad()&& cockConfigs.isOriginSave()&& !request.isPresent()) {
 			Object map = new RestTemplate().postForEntity(cockConfigs.getOriginUrl()+link, body, Object.class).getBody();
-			handlePost(path.replace("v1", "post"), map);
+			handlePost(url.replace("v1", "post"), para, map);
 			return map;
 		}
 		if(cockConfigs.isOriginLoad()&& cockConfigs.isOriginSave()&& request.isPresent()) {
 			Object map = new RestTemplate().postForEntity(cockConfigs.getOriginUrl()+link, body, Object.class).getBody();
-			handlePut(path.replace("v1", "post"), map);
+			handlePut(url.replace("v1", "post"), para, map);
 			return map;
 		}
 		if(cockConfigs.isOriginLoad()) {
@@ -47,15 +50,12 @@ public class MockPostService {
 	}
 	
 	
-	public Object handlePost(String path, Object body) {
-		String newId = "";
-		String link = path.replace("/post", "");
-		String[] terms = link.split("/");
-		for(String term : terms) {
-			newId += term+"-_";
-		}
-		if (requestRepository.findById(newId).isPresent()) {
-			Request req = requestRepository.findById(newId).get();
+	public Object handlePost(String path, Map<String, String[]> para, Object body) {
+		String url = textAnalyzer.buildUrl(path, para);
+		String link = textAnalyzer.removePrefixUrl(url, "post");
+		String id = textAnalyzer.buildId(link);
+		if (requestRepository.findById(id).isPresent()) {
+			Request req = requestRepository.findById(id).get();
 			if(req.getBodyPost()!= null) {
 				return req;
 			}
@@ -64,22 +64,19 @@ public class MockPostService {
 		}
 		
 		Request request = new Request();
-		request.setRequestId(newId);
+		request.setRequestId(id);
 		request.setBodyPost(body);;
 		request.setLink(link);
 		return requestRepository.save(request);
 	}
 	
-	public Object handlePut(String path, Object body) {
-		String newId = "";
-		String link = path.replace("/post", "");
-		String[] terms = link.split("/");
+	public Object handlePut(String path, Map<String, String[]> para, Object body) {
+		String url = textAnalyzer.buildUrl(path, para);
+		String link = textAnalyzer.removePrefixUrl(url, "post");
+		String id = textAnalyzer.buildId(link);
 		
-		for(String term : terms) {
-			newId += term+"-_";
-		}
-		if(requestRepository.findById(newId).isPresent()) {
-			Request request = requestRepository.findById(newId).get();
+		if(requestRepository.findById(id).isPresent()) {
+			Request request = requestRepository.findById(id).get();
 			request.setBodyPost(body);
 			return requestRepository.save(request);
 		}

@@ -4,7 +4,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,13 +29,7 @@ public class MockPostController {
 		String restOfTheUrl = (String) request.getAttribute(
 			    HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
 		Map<String, String[]> para = request.getParameterMap();
-		if(para.size()>0) {
-			restOfTheUrl+="?";
-		}
-		for(String key: para.keySet()) {
-			restOfTheUrl += key+"=" + StringUtils.join(para.get(key))+"&";
-		}
-	    return mockPostService.handlePost(restOfTheUrl, body);
+	    return mockPostService.handlePost(restOfTheUrl, para, body);
 	}
 	
 	@PutMapping(value = "/{str1}/**")
@@ -46,13 +39,7 @@ public class MockPostController {
 		String restOfTheUrl = (String) request.getAttribute(
 			    HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
 		Map<String, String[]> para = request.getParameterMap();
-		if(para.size()>0) {
-			restOfTheUrl+="?";
-		}
-		for(String key: para.keySet()) {
-			restOfTheUrl += key+"=" + StringUtils.join(para.get(key))+"&";
-		}
-	    return mockPostService.handlePut(restOfTheUrl, body);
+	    return mockPostService.handlePut(restOfTheUrl, para, body);
 	}
 	
 
