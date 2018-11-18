@@ -30,7 +30,7 @@ public abstract class AbstractService<M extends AbstractConfig, O extends Reques
 		this.serviceConfig = serviceConfig;
 	}
 
-	public Object handleGet(String path, Map<String, String[]> para) {
+	public Object handleGet(String path, Map<String, String[]> para, Object body) {
 
 		String url = textAnalyzer.buildUrl(path, para);
 		String link = textAnalyzer.removePrefixUrl(url, "v1");
@@ -38,14 +38,14 @@ public abstract class AbstractService<M extends AbstractConfig, O extends Reques
 
 		Optional<O> request = repository.findById(id);
 		if (cockConfigs.isOriginLoad() && cockConfigs.isOriginSave() && !request.isPresent()) {
-			Object map = new RestTemplate().getForEntity(cockConfigs.getOriginUrl() + link, Object.class).getBody();
+			Object map = serviceConfig.getFromRealApi(cockConfigs.getOriginUrl(), link, body);
 			O o = factory.initObj(id, map, link);
 			repository.save(o);
 			return map;
 		}
 
 		if (cockConfigs.isOriginLoad() && cockConfigs.isOriginSave() && request.isPresent()) {
-			Object map = new RestTemplate().getForEntity(cockConfigs.getOriginUrl() + link, Object.class).getBody();
+			Object map = serviceConfig.getFromRealApi(cockConfigs.getOriginUrl(), link, body);
 			O o = factory.initObj(id, map, link);
 			repository.save(o);
 			return map;
