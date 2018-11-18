@@ -6,7 +6,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
 
-import com.auto.api.MockConfigs;
+import com.auto.api.app.MockConfigs;
+import com.auto.api.lib.TextAnalyzer;
 import com.auto.api.model.Request;
 
 public abstract class AbstractService<M extends AbstractConfig, O extends Request, A extends AbstractRepository<O>> {

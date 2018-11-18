@@ -1,4 +1,4 @@
-package com.auto.api.common;
+package com.auto.api.lib;
 
 import java.util.Map;
 

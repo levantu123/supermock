@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.auto.api.MockConfigs;
-import com.auto.api.common.RequestFactory;
-import com.auto.api.common.TextAnalyzer;
+import com.auto.api.app.MockConfigs;
+import com.auto.api.lib.RequestFactory;
+import com.auto.api.lib.TextAnalyzer;
 import com.auto.api.model.Request;
 import com.auto.api.repo.RequestRepository;
 
