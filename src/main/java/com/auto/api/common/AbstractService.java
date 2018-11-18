@@ -8,11 +8,10 @@ import org.springframework.web.client.RestTemplate;
 
 import com.auto.api.MockConfigs;
 import com.auto.api.model.Request;
-import com.auto.api.repo.RequestRepository;
 
-public abstract class AbstractService<M extends AbstractConfig> {
+public abstract class AbstractService<M extends AbstractConfig, O extends Request, A extends AbstractRepository<O>> {
 	@Autowired
-	RequestRepository requestRepository;
+	A repository;
 
 	@Autowired
 	TextAnalyzer textAnalyzer;
@@ -22,7 +21,10 @@ public abstract class AbstractService<M extends AbstractConfig> {
 
 	@Autowired
 	M serviceConfig;
-	
+
+	@Autowired
+	AbstractFactory<O> factory;
+
 	public void setServiceConfig(M serviceConfig) {
 		this.serviceConfig = serviceConfig;
 	}
@@ -33,16 +35,18 @@ public abstract class AbstractService<M extends AbstractConfig> {
 		String link = textAnalyzer.removePrefixUrl(url, "v1");
 		String id = textAnalyzer.buildId(link);
 
-		Optional<Request> request = requestRepository.findById(id);
+		Optional<O> request = repository.findById(id);
 		if (cockConfigs.isOriginLoad() && cockConfigs.isOriginSave() && !request.isPresent()) {
 			Object map = new RestTemplate().getForEntity(cockConfigs.getOriginUrl() + link, Object.class).getBody();
-			handlePost(url.replace("v1", serviceConfig.getPrefix()), para, map);
+			O o = factory.initObj(id, map, link);
+			repository.save(o);
 			return map;
 		}
 
 		if (cockConfigs.isOriginLoad() && cockConfigs.isOriginSave() && request.isPresent()) {
 			Object map = new RestTemplate().getForEntity(cockConfigs.getOriginUrl() + link, Object.class).getBody();
-			handlePut(url.replace("v1", serviceConfig.getPrefix()), para, map);
+			O o = factory.initObj(id, map, link);
+			repository.save(o);
 			return map;
 		}
 
@@ -62,21 +66,17 @@ public abstract class AbstractService<M extends AbstractConfig> {
 		String link = textAnalyzer.removePrefixUrl(url, serviceConfig.getPrefix());
 		String id = textAnalyzer.buildId(link);
 
-		if (requestRepository.findById(id).isPresent()) {
-			Request req = requestRepository.findById(id).get();
-			if (req.getBodyGet() != null) {
-				return req;
+		if (repository.findById(id).isPresent()) {
+			O o = repository.findById(id).get();
+			if (o.getBodyGet() != null) {
+				return o;
 			}
-			req.setBodyGet(body);
-			return requestRepository.save(req);
+			o.setBodyGet(body);
+			return repository.save(o);
 		}
 
-		Request request = new Request();
-		request.setRequestId(id);
-		request.setBodyGet(body);
-		;
-		request.setLink(link);
-		return requestRepository.save(request);
+		O o = factory.initObj(id, body, link);
+		return repository.save(o);
 	}
 
 	public Object handlePut(String path, Map<String, String[]> para, Object body) {
@@ -84,10 +84,10 @@ public abstract class AbstractService<M extends AbstractConfig> {
 		String link = textAnalyzer.removePrefixUrl(url, serviceConfig.getPrefix());
 		String id = textAnalyzer.buildId(link);
 
-		if (requestRepository.findById(id).isPresent()) {
-			Request request = requestRepository.findById(id).get();
-			request.setBodyGet(body);
-			return requestRepository.save(request);
+		if (repository.findById(id).isPresent()) {
+			O o = repository.findById(id).get();
+			o.setBodyGet(body);
+			return repository.save(o);
 		}
 		return null;
 	}

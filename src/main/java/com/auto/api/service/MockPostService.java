@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.auto.api.MockConfigs;
+import com.auto.api.common.RequestFactory;
 import com.auto.api.common.TextAnalyzer;
 import com.auto.api.model.Request;
 import com.auto.api.repo.RequestRepository;
@@ -23,6 +24,8 @@ public class MockPostService {
 	@Autowired
 	private MockConfigs cockConfigs;
 	
+	@Autowired
+	RequestFactory requestFactory;
 	
 	public Object handleGet(String path, Map<String, String[]> para, Object body) {
 		String url = textAnalyzer.buildUrl(path, para);
@@ -32,12 +35,14 @@ public class MockPostService {
 		Optional<Request> request = requestRepository.findById(id);
 		if(cockConfigs.isOriginLoad()&& cockConfigs.isOriginSave()&& !request.isPresent()) {
 			Object map = new RestTemplate().postForEntity(cockConfigs.getOriginUrl()+link, body, Object.class).getBody();
-			handlePost(url.replace("v1", "post"), para, map);
+			Request newReq = requestFactory.initRequest(id, map, link);
+			requestRepository.save(newReq);
 			return map;
 		}
 		if(cockConfigs.isOriginLoad()&& cockConfigs.isOriginSave()&& request.isPresent()) {
 			Object map = new RestTemplate().postForEntity(cockConfigs.getOriginUrl()+link, body, Object.class).getBody();
-			handlePut(url.replace("v1", "post"), para, map);
+			Request newReq = requestFactory.initRequest(id, map, link);
+			requestRepository.save(newReq);
 			return map;
 		}
 		if(cockConfigs.isOriginLoad()) {
@@ -63,10 +68,7 @@ public class MockPostService {
 			return requestRepository.save(req);
 		}
 		
-		Request request = new Request();
-		request.setRequestId(id);
-		request.setBodyPost(body);;
-		request.setLink(link);
+		Request request = requestFactory.initRequest(id, body, link);
 		return requestRepository.save(request);
 	}
 	

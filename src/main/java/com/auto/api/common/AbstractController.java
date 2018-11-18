@@ -11,13 +11,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.servlet.HandlerMapping;
 
-public abstract class AbstractController<M extends AbstractConfig, T extends AbstractService<M>> {
+import com.auto.api.model.Request;
+
+public abstract class AbstractController<M extends AbstractConfig, T extends AbstractService<M, O, A>, O extends Request, A extends AbstractRepository<O>> {
 	
 	@Autowired
 	T abstractService;
 	
 	@Autowired
-	M abstractConfig;
+	M serviceConfig;
 	
 	@PostMapping(value = "/{str1}/**")
 	public Object create(
